@@ -1,9 +1,9 @@
 {
-  "name": "lrc-dropdown",
+  "name": "lrc-wjh",
   "version": "1.0.0",
-  "description": "",
+  "description": "react 组件库",
   "keywords": [],
-  "homepage": "https://codesandbox.io/s/new",
+  "homepage": "https://wjh4dev.github.io",
   "main": "src/index.js",
   "dependencies": {
     "eslint": "4.19.1",
