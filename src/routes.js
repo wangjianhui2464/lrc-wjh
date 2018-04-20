@@ -6,6 +6,7 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 import DropdownExample from './example/dropdown.example';
+import LazyloadExample from './example/lazyload.example';
 
 const Routes = () => (
   <div>
@@ -20,7 +21,7 @@ const Routes = () => (
       }
     />
     <Route path="/dropdown" component={DropdownExample} />
-    <Route path="/lazyload" component={DropdownExample} />
+    <Route path="/lazyload" component={LazyloadExample} />
   </div>
 );
 
