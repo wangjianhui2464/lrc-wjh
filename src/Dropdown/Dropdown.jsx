@@ -1,11 +1,10 @@
-/* eslint-disable react/forbid-prop-types */
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 class Dropdown extends React.PureComponent {
   static propTypes = {
     // 触发菜单打开事件
-    trigger: PropTypes.oneOf(["hover", "click"]),
+    trigger: PropTypes.oneOf(['hover', 'click']),
     // 自定义样式名称
     className: PropTypes.string,
     // 按钮text
@@ -14,38 +13,38 @@ class Dropdown extends React.PureComponent {
     hideOnClick: PropTypes.bool,
     // 点击菜单项 触发回调
     onItemSelect: PropTypes.func,
-    children: PropTypes.any
+    children: PropTypes.element || PropTypes.string,
   };
 
   static defaultProps = {
-    trigger: "hover",
-    buttonText: "点击下拉",
+    trigger: 'hover',
+    buttonText: '点击下拉',
     hideOnClick: true,
-    className: "dropdown-container",
+    className: 'dropdown-container',
     onItemSelect: () => null,
-    children: null
+    children: null,
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      visible: false
+      visible: false,
     };
 
     this.handleClick = this.handleClick.bind(this);
     this.showItems = this.showItems.bind(this);
     this.hideItems = this.hideItems.bind(this);
-    this.onDropownItemClick = this.onDropownItemClick.bind(this);
+    this.handleDropdownItemClick = this.handleDropdownItemClick.bind(this);
     this.handleClickOutside = this.handleClickOutside.bind(this);
     this.getContainer = this.getContainer.bind(this);
   }
 
   componentDidMount() {
-    document.addEventListener("click", this.handleClickOutside);
+    document.addEventListener('click', this.handleClickOutside);
   }
 
   componentWillUnmount() {
-    document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener('click', this.handleClickOutside);
   }
 
   /**
@@ -98,11 +97,10 @@ class Dropdown extends React.PureComponent {
    * 选中下拉选项后执行函数
    * @param clickItemProps 选中下拉项组件 props
    */
-  // eslint-disable-next-line react/sort-comp
-  onDropownItemClick(clickItemProps) {
+  handleDropdownItemClick(clickItemProps) {
     if (this.props.hideOnClick) {
       this.setState({
-        visible: false
+        visible: false,
       });
     }
 
@@ -119,16 +117,21 @@ class Dropdown extends React.PureComponent {
         className={className}
         ref={this.getContainer}
         onMouseEnter={
-          trigger && trigger === "hover" ? this.showItems : () => null
+          trigger && trigger === 'hover' ? this.showItems : () => null
         }
         onMouseLeave={
-          trigger && trigger === "hover" ? this.hideItems : () => null
+          trigger && trigger === 'hover' ? this.hideItems : () => null
         }
       >
         <div
+          role="button"
+          tabIndex="0"
           className="dropdown-menu"
           onClick={
-            trigger && trigger === "click" ? this.handleClick : () => null
+            trigger && trigger === 'click' ? this.handleClick : () => null
+          }
+          onKeyPress={
+            trigger && trigger === 'click' ? this.handleClick : () => null
           }
         >
           {this.props.buttonText}
@@ -136,19 +139,19 @@ class Dropdown extends React.PureComponent {
 
         {this.state.visible
           ? React.Children.map(children, (child, index) => {
-              if (!child) {
-                return null;
-              }
-              // 拼接返回组件 新属性
-              const attribute = {
-                key: child.key ? child.key : `item-${index}`,
-                onItemSelect: this.onDropownItemClick
-              };
-              if (child.key) {
-                attribute.keyCmd = child.key;
-              }
-              return React.cloneElement(child, attribute);
-            })
+            if (!child) {
+              return null;
+            }
+            // 拼接返回组件 新属性
+            const attribute = {
+              key: child.key ? child.key : `item-${index}`,
+              onItemSelect: this.handleDropdownItemClick,
+            };
+            if (child.key) {
+              attribute.keyCmd = child.key;
+            }
+            return React.cloneElement(child, attribute);
+          })
           : null}
       </div>
     );

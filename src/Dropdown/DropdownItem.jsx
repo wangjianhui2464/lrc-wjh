@@ -1,20 +1,19 @@
-/* eslint-disable react/forbid-prop-types */
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export default class DropdownItem extends React.PureComponent {
   static propTypes = {
     className: PropTypes.string,
     disabled: PropTypes.bool,
     onItemSelect: PropTypes.func,
-    children: PropTypes.any
+    children: PropTypes.element || PropTypes.string,
   };
 
   static defaultProps = {
-    className: "dropdown-items",
+    className: 'dropdown-items',
     disabled: false,
     onItemSelect: () => null,
-    children: null
+    children: null,
   };
 
   constructor(props) {
@@ -29,8 +28,8 @@ export default class DropdownItem extends React.PureComponent {
     if (!disabled) {
       const filterProps = {};
       // 处理传递给回调函数的参数：去掉 typeof 为 function
-      Object.keys(this.props).forEach(item => {
-        if (typeof this.props[item] !== "function") {
+      Object.keys(this.props).forEach((item) => {
+        if (typeof this.props[item] !== 'function') {
           filterProps[item] = this.props[item];
         }
       });
@@ -40,9 +39,15 @@ export default class DropdownItem extends React.PureComponent {
 
   render() {
     const { disabled, className } = this.props;
-    const classNameStr = `${disabled ? "disabled" : ""} ${className}`;
+    const classNameStr = `${disabled ? 'disabled' : ''} ${className}`;
     return (
-      <div className={classNameStr} onClick={this.handleSelect}>
+      <div
+        role="button"
+        tabIndex="0"
+        className={classNameStr}
+        onClick={this.handleSelect}
+        onKeyPress={this.handleSelect}
+      >
         {this.props.children}
       </div>
     );
