@@ -12,6 +12,7 @@
     "flowtype"
   ],
   "rules": {
+    "linebreak-style": "off",
     "react/jsx-filename-extension": [
       1,
       {
