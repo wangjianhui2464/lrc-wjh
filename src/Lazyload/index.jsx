@@ -10,7 +10,9 @@ import decorator from './decorator';
 import debounce from './utils/debounce';
 import throttle from './utils/throttle';
 
-const defaultBoundingClientRect = { top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 };
+const defaultBoundingClientRect = {
+  top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0,
+};
 const LISTEN_FLAG = 'data-lazyload-listened';
 const listeners = [];
 let pending = [];
@@ -21,12 +23,11 @@ try {
   const opts = Object.defineProperty({}, 'passive', {
     get() {
       passiveEventSupported = true;
-    }
+    },
   });
   window.addEventListener('test', null, opts);
-}
-catch (e) {
-}
+} catch (e) {}
+
 // if they are supported, setup the optional params
 // IMPORTANT: FALSE doubles as the default CAPTURE value!
 const passiveEvent = passiveEventSupported ? { capture: false, passive: true } : false;
@@ -145,8 +146,12 @@ const checkVisible = function checkVisible(component) {
   }
 };
 
-
-const purgePending = function purgePending() {
+const lazyLoadHandler = () => {
+  for (let i = 0; i < listeners.length; ++i) {
+    const listener = listeners[i];
+    checkVisible(listener);
+  }
+  // Remove `once` component in listeners
   pending.forEach((component) => {
     const index = listeners.indexOf(component);
     if (index !== -1) {
@@ -157,20 +162,13 @@ const purgePending = function purgePending() {
   pending = [];
 };
 
-const lazyLoadHandler = () => {
-  for (let i = 0; i < listeners.length; ++i) {
-    const listener = listeners[i];
-    checkVisible(listener);
-  }
-  // Remove `once` component in listeners
-  purgePending();
-};
-
 // Depending on component's props
 let delayType;
 let finalLazyLoadHandler = null;
 
-
+/**
+ * 组件入口
+ */
 class LazyLoad extends Component {
   constructor(props) {
     super(props);
@@ -280,16 +278,17 @@ LazyLoad.propTypes = {
   throttle: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
   debounce: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
   placeholder: PropTypes.node,
-  unmountIfInvisible: PropTypes.bool
+  unmountIfInvisible: PropTypes.bool,
 };
 
 LazyLoad.defaultProps = {
   once: false,
+  height: 0,
   offset: 0,
   overflow: false,
   resize: false,
   scroll: true,
-  unmountIfInvisible: false
+  unmountIfInvisible: false,
 };
 
 export const lazyload = decorator;

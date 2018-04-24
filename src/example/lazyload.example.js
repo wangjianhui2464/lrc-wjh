@@ -5,9 +5,21 @@
 import React from 'react';
 import LazyLoad from '../Lazyload';
 
+import './lazyload.example.css';
+
 const uniqueId = () => (`${Math.random().toString(36)}00000000000000000`).slice(2, 10);
 
 
+const Operation = ({ onClickUpdate }) => (
+  <div className="op">
+    <a className="update-btn button-secondary pure-button" onClick={onClickUpdate}>Update</a>
+  </div>
+);
+
+
+/**
+ * lazyload 中显示的 组件
+ */
 class Widget extends React.Component {
   constructor(props) {
     super(props);
@@ -16,6 +28,14 @@ class Widget extends React.Component {
       isReady: true,
       count: 1,
     };
+  }
+
+  componentDidMount() {
+    console.log('--加载了---', this.props);
+  }
+
+  componentWillUpdate() {
+    console.log('--WillUpdate---', this.props);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -69,7 +89,21 @@ class Widget extends React.Component {
   }
 }
 
-export default class lazyloadExample extends React.PureComponent {
+function PlaceholderComponent() {
+  return (
+    <div className="placeholder">
+      <div className="spinner">
+        <div className="rect1" />
+        <div className="rect2" />
+        <div className="rect3" />
+        <div className="rect4" />
+        <div className="rect5" />
+      </div>
+    </div>
+  );
+}
+
+export default class lazyloadExample extends React.Component {
   constructor() {
     super();
 
@@ -80,14 +114,36 @@ export default class lazyloadExample extends React.PureComponent {
         once: [6, 7].indexOf(index) > -1,
       })),
     };
+
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick() {
+    const id = uniqueId();
+
+    this.setState({
+      arr: this.state.arr.map(el => ({
+        ...el,
+        uniqueId: id,
+      })),
+    });
   }
 
   render() {
     return (
       <div className="wrapper">
+        <Operation type="overflow" onClickUpdate={this.handleClick} />
         <div className="widget-list">
           {this.state.arr.map((el, index) => (
-            <LazyLoad once={el.once} key={index} height={200} offset={[-100, 0]}>
+            <LazyLoad
+              once={el.once}
+              key={index}
+              height={200}
+              throttle={100}
+              offset={[0, 0]}
+              placeholder={<PlaceholderComponent />}
+              debounce={500}
+            >
               <Widget once={el.once} id={el.uniqueId} count={index + 1} />
             </LazyLoad>
           ))}

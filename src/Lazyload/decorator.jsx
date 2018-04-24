@@ -3,7 +3,7 @@ import LazyLoad from './index';
 
 const getDisplayName = WrappedComponent => WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
-export default (options = {}) => function lazyload(WrappedComponent) {
+const Decoretor = (options = {}) => function lazyload(WrappedComponent) {
   return class LazyLoadDecorated extends Component {
     constructor() {
       super();
@@ -19,3 +19,5 @@ export default (options = {}) => function lazyload(WrappedComponent) {
     }
   };
 };
+
+export default Decoretor;
