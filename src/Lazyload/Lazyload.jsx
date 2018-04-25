@@ -1,3 +1,4 @@
+/* eslint-disable react/no-find-dom-node */
 /**
  * react-lazyload
  */
@@ -9,14 +10,19 @@ import scrollParent from './utils/scrollParent';
 import debounce from './utils/debounce';
 import throttle from './utils/throttle';
 
+// 获取元素宽高初始值
 const defaultBoundingClientRect = {
   top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0,
 };
 const LISTEN_FLAG = 'data-lazyload-listened';
+// 绑定了监听事件的元素集合
 const listeners = [];
+// 只执行一次的元素集合
 let pending = [];
 
-// try to handle passive events
+// 为了提升事件绑定函数的执行性能，提前获取 passive 属性的值。
+// 详细解释： https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+// 判断浏览器是否支持 passive 属性
 let passiveEventSupported = false;
 try {
   const opts = Object.defineProperty({}, 'passive', {
@@ -25,10 +31,10 @@ try {
     },
   });
   window.addEventListener('test', null, opts);
-} catch (e) {}
+} catch (e) {
+}
 
-// if they are supported, setup the optional params
-// IMPORTANT: FALSE doubles as the default CAPTURE value!
+// 如果浏览器支持 passive 设置 eventListener options -> passiveEvent
 const passiveEvent = passiveEventSupported ? { capture: false, passive: true } : false;
 
 
@@ -125,9 +131,11 @@ const checkVisible = function checkVisible(component) {
     parent !== node.ownerDocument &&
     parent !== document &&
     parent !== document.documentElement;
-  const visible = isOverflow ? checkOverflowVisible(component, parent) : checkNormalVisible(component);
+  const visible = isOverflow ?
+    checkOverflowVisible(component, parent) :
+    checkNormalVisible(component);
   if (visible) {
-    // 如果之前可见，不在渲染
+    // 如果之前可见，不再渲染
     if (!component.visible) {
       if (component.props.once) {
         pending.push(component);
@@ -144,6 +152,9 @@ const checkVisible = function checkVisible(component) {
   }
 };
 
+/**
+ * 默认懒加载处理事件
+ */
 const lazyLoadHandler = () => {
   for (let i = 0; i < listeners.length; ++i) {
     const listener = listeners[i];
@@ -160,8 +171,9 @@ const lazyLoadHandler = () => {
   pending = [];
 };
 
-// 依赖组件的属性
+// 延迟回调函数类型
 let delayType;
+// 最终懒加载回调函数
 let finalLazyLoadHandler = null;
 
 /**
@@ -178,8 +190,9 @@ class LazyLoad extends Component {
   componentDidMount() {
     // It's unlikely to change delay type on the fly, this is mainly
     // designed for tests
-    const needResetFinalLazyLoadHandler = (this.props.debounce !== undefined && delayType === 'throttle')
-      || (delayType === 'debounce' && this.props.debounce === undefined);
+    const isDebounce = this.props.debounce !== undefined && delayType === 'throttle';
+    const isNotDebounce = delayType === 'debounce' && this.props.debounce === undefined;
+    const needResetFinalLazyLoadHandler = isDebounce || isNotDebounce;
 
     if (needResetFinalLazyLoadHandler) {
       off(window, 'scroll', finalLazyLoadHandler, passiveEvent);
@@ -203,7 +216,9 @@ class LazyLoad extends Component {
       }
     }
 
+    // overflow 组件定义 超出滚动
     if (this.props.overflow) {
+      // 超出滚动，查找父元素绑定事件
       const parent = scrollParent(ReactDom.findDOMNode(this));
       if (parent && typeof parent.getAttribute === 'function') {
         const listenerCount = 1 + (+parent.getAttribute(LISTEN_FLAG));
@@ -263,7 +278,7 @@ class LazyLoad extends Component {
     } else if (this.props.placeholder) {
       return this.props.placeholder;
     }
-    return <div style={{ height: this.props.height }} className="lazyload-placeholder" />;
+    return <div style={{ height: this.props.height }} className="lazyload-placeholder"/>;
   }
 }
 

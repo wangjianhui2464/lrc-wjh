@@ -12,10 +12,12 @@ export default (node) => {
   let parent = node;
 
   while (parent) {
+    // 没有父节点，直接返回根元素 || document
     if (!parent.parentNode) {
       return node.ownerDocument || document.documentElement;
     }
 
+    // 有父节点 =>
     const style = window.getComputedStyle(parent);
     const position = style.position;
     const overflow = style.overflow;
@@ -27,7 +29,10 @@ export default (node) => {
       continue;
     }
 
-    if (overflowRegex.test(overflow) && overflowRegex.test(overflowX) && overflowRegex.test(overflowY)) {
+    // 判断只要父元素里有 overflow 样式，就是有滚动
+    if (overflowRegex.test(overflow) ||
+      overflowRegex.test(overflowX) ||
+      overflowRegex.test(overflowY)) {
       return parent;
     }
 

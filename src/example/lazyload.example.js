@@ -134,9 +134,10 @@ export default class lazyloadExample extends React.Component {
     return (
       <div className="wrapper">
         <Operation type="overflow" onClickUpdate={this.handleClick} />
-        <div className="widget-list">
+        <div className="widget-list overflow">
           {this.state.arr.map((el, index) => (
             <LazyLoad
+              overflow
               style={{ position: 'absolute' }}
               once={false}
               key={index}
@@ -144,7 +145,7 @@ export default class lazyloadExample extends React.Component {
               throttle={100}
               debounce={500}
               offset={[0, 0]}
-
+              placeholder={<PlaceholderComponent />}
             >
               <Widget once={el.once} id={el.uniqueId} count={index + 1} />
             </LazyLoad>
