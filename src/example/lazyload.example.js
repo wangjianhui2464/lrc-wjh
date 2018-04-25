@@ -3,7 +3,7 @@
  * on 2018/4/20 0020 17:47
  */
 import React from 'react';
-import LazyLoad from '../Lazyload';
+import LazyLoad, { forceCheck } from '../Lazyload/Lazyload';
 
 import './lazyload.example.css';
 
@@ -34,11 +34,8 @@ class Widget extends React.Component {
     console.log('--加载了---', this.props);
   }
 
-  componentWillUpdate() {
-    console.log('--WillUpdate---', this.props);
-  }
-
   componentWillReceiveProps(nextProps) {
+    forceCheck();
     if (nextProps.id !== this.props.id && this.props.id) {
       this.setState({
         isReady: false,
@@ -55,6 +52,10 @@ class Widget extends React.Component {
         isReady: true,
       });
     }
+  }
+
+  componentWillUpdate() {
+    console.log('--WillUpdate---', this.props);
   }
 
   render() {
@@ -136,13 +137,14 @@ export default class lazyloadExample extends React.Component {
         <div className="widget-list">
           {this.state.arr.map((el, index) => (
             <LazyLoad
-              once={el.once}
+              style={{ position: 'absolute' }}
+              once={false}
               key={index}
               height={200}
               throttle={100}
-              offset={[0, 0]}
-              placeholder={<PlaceholderComponent />}
               debounce={500}
+              offset={[0, 0]}
+
             >
               <Widget once={el.once} id={el.uniqueId} count={index + 1} />
             </LazyLoad>

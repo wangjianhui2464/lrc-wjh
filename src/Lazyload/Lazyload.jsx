@@ -6,7 +6,6 @@ import ReactDom from 'react-dom';
 import PropTypes from 'prop-types';
 import { on, off } from './utils/event';
 import scrollParent from './utils/scrollParent';
-import decorator from './decorator';
 import debounce from './utils/debounce';
 import throttle from './utils/throttle';
 
@@ -34,7 +33,7 @@ const passiveEvent = passiveEventSupported ? { capture: false, passive: true } :
 
 
 /**
- * Check if `component` is visible in overflow container `parent`
+ * 检查 `component` 在 `parent` 中是否可见
  * @param  {node} component React component
  * @param  {node} parent    component's scroll parent
  * @return {bool}
@@ -78,7 +77,7 @@ const checkOverflowVisible = function checkOverflowVisible(component, parent) {
 };
 
 /**
- * Check if `component` is visible in document
+ * 检查 `component` 是否在 `document` 中可见
  * @param  {node} component React component
  * @return {bool}
  */
@@ -109,10 +108,10 @@ const checkNormalVisible = function checkNormalVisible(component) {
 
 
 /**
- * Detect if element is visible in viewport, if so, set `visible` state to true.
- * If `once` prop is provided true, remove component as listener after checkVisible
+ * 检测元素在窗口中是否可见，如果是，则将 `visible` 状态设置为true。
+ * 如果 `once` 为 true, 在 checkVisible 后移除监听
  *
- * @param  {React} component   React component that respond to scroll and resize
+ * @param  {React} component   React 响应滚动和调整大小的组件
  */
 const checkVisible = function checkVisible(component) {
   const node = ReactDom.findDOMNode(component);
@@ -121,15 +120,14 @@ const checkVisible = function checkVisible(component) {
   }
 
   const parent = scrollParent(node);
+
   const isOverflow = component.props.overflow &&
     parent !== node.ownerDocument &&
     parent !== document &&
     parent !== document.documentElement;
-  const visible = isOverflow ?
-    checkOverflowVisible(component, parent) :
-    checkNormalVisible(component);
+  const visible = isOverflow ? checkOverflowVisible(component, parent) : checkNormalVisible(component);
   if (visible) {
-    // Avoid extra render if previously is visible
+    // 如果之前可见，不在渲染
     if (!component.visible) {
       if (component.props.once) {
         pending.push(component);
@@ -151,7 +149,7 @@ const lazyLoadHandler = () => {
     const listener = listeners[i];
     checkVisible(listener);
   }
-  // Remove `once` component in listeners
+  // 从监听器中移除 `once` 组件
   pending.forEach((component) => {
     const index = listeners.indexOf(component);
     if (index !== -1) {
@@ -162,7 +160,7 @@ const lazyLoadHandler = () => {
   pending = [];
 };
 
-// Depending on component's props
+// 依赖组件的属性
 let delayType;
 let finalLazyLoadHandler = null;
 
@@ -173,6 +171,7 @@ class LazyLoad extends Component {
   constructor(props) {
     super(props);
 
+    // 子组件是否可见
     this.visible = false;
   }
 
@@ -259,11 +258,12 @@ class LazyLoad extends Component {
   }
 
   render() {
-    return this.visible ?
-      this.props.children :
-      this.props.placeholder ?
-        this.props.placeholder :
-        <div style={{ height: this.props.height }} className="lazyload-placeholder" />;
+    if (this.visible) {
+      return this.props.children;
+    } else if (this.props.placeholder) {
+      return this.props.placeholder;
+    }
+    return <div style={{ height: this.props.height }} className="lazyload-placeholder" />;
   }
 }
 
@@ -291,6 +291,5 @@ LazyLoad.defaultProps = {
   unmountIfInvisible: false,
 };
 
-export const lazyload = decorator;
 export default LazyLoad;
 export { lazyLoadHandler as forceCheck };
