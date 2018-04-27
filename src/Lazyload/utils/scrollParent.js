@@ -1,13 +1,9 @@
-/**
- * @fileOverview Find scroll parent
- */
-
+/* eslint-disable no-continue */
 export default (node) => {
   if (!node) {
     return document.documentElement;
   }
 
-  const excludeStaticParent = node.style.position === 'absolute';
   const overflowRegex = /(scroll|auto)/;
   let parent = node;
 
@@ -19,12 +15,11 @@ export default (node) => {
 
     // 有父节点 =>
     const style = window.getComputedStyle(parent);
-    const position = style.position;
-    const overflow = style.overflow;
+    const { position, overflow } = style;
     const overflowX = style['overflow-x'];
     const overflowY = style['overflow-y'];
 
-    if (position === 'static' && excludeStaticParent) {
+    if (position === 'static' && node.style.position === 'absolute') {
       parent = parent.parentNode;
       continue;
     }

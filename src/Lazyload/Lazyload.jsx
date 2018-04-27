@@ -1,7 +1,4 @@
-/* eslint-disable react/no-find-dom-node */
-/**
- * react-lazyload
- */
+/* eslint-disable react/no-find-dom-node,react/no-unused-prop-types */
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
 import PropTypes from 'prop-types';
@@ -26,12 +23,14 @@ let pending = [];
 let passiveEventSupported = false;
 try {
   const opts = Object.defineProperty({}, 'passive', {
+    // eslint-disable-next-line getter-return
     get() {
       passiveEventSupported = true;
     },
   });
   window.addEventListener('test', null, opts);
 } catch (e) {
+// eslint-disable-next-line no-trailing-spaces
 }
 
 // 如果浏览器支持 passive 设置 eventListener options -> passiveEvent
@@ -40,13 +39,17 @@ const passiveEvent = passiveEventSupported ? { capture: false, passive: true } :
 
 /**
  * 检查 `component` 在 `parent` 中是否可见
- * @param  {node} component React component
+ * @param  {React} component React component
  * @param  {node} parent    component's scroll parent
- * @return {bool}
+ * @return {boolean}
  */
 const checkOverflowVisible = function checkOverflowVisible(component, parent) {
   const node = ReactDom.findDOMNode(component);
 
+  /*
+   * 计算父元素宽高
+   * 知识点：getBoundingClientRect() https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect
+   */
   let parentTop;
   let parentHeight;
 
@@ -55,14 +58,23 @@ const checkOverflowVisible = function checkOverflowVisible(component, parent) {
   } catch (e) {
     ({ top: parentTop, height: parentHeight } = defaultBoundingClientRect);
   }
-
+  // 窗口可视高度
   const windowInnerHeight = window.innerHeight || document.documentElement.clientHeight;
 
-  // calculate top and height of the intersection of the element's scrollParent and viewport
-  const intersectionTop = Math.max(parentTop, 0); // intersection's top relative to viewport
-  const intersectionHeight = Math.min(windowInnerHeight, parentTop + parentHeight) - intersectionTop; // height
+  // 判断父元素顶边是否 “大于零”
+  // 大于零: 父元素顶边超出了可视窗口；小于零：父元素顶边在可视窗口之内
+  const intersectionTop = Math.max(parentTop, 0);
+  // 计算父元素底边是否 “小于可视窗口底边”
+  // 小于：父元素底边在可视窗口之内；大于：父元素底边在可视窗口之外
+  const intersectionBottom = Math.min(windowInnerHeight, parentTop + parentHeight);
 
-  // check whether the element is visible in the intersection
+  // 父元素处于可视窗口区域的高度
+  const intersectionHeight = intersectionBottom - intersectionTop;
+
+  /*
+   * 计算当前组件的宽高
+   * 知识点：getBoundingClientRect() https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect
+   */
   let top;
   let height;
 
@@ -71,12 +83,12 @@ const checkOverflowVisible = function checkOverflowVisible(component, parent) {
   } catch (e) {
     ({ top, height } = defaultBoundingClientRect);
   }
-
-  const offsetTop = top - intersectionTop; // element's top relative to intersection
-
+  // 当前组件顶边距（父元素在可视区域最顶点）的距离
+  const offsetTop = top - intersectionTop;
+  // 如果有设置偏移量，将偏移量加上。 此处兼容 number | [number, number] 两种形式
   const offsets = Array.isArray(component.props.offset) ?
     component.props.offset :
-    [component.props.offset, component.props.offset]; // Be compatible with previous API
+    [component.props.offset, component.props.offset];
 
   return (offsetTop - offsets[0] <= intersectionHeight) &&
     (offsetTop + height + offsets[1] >= 0);
@@ -84,8 +96,8 @@ const checkOverflowVisible = function checkOverflowVisible(component, parent) {
 
 /**
  * 检查 `component` 是否在 `document` 中可见
- * @param  {node} component React component
- * @return {bool}
+ * @param  {React} component React component
+ * @return {boolean}
  */
 const checkNormalVisible = function checkNormalVisible(component) {
   const node = ReactDom.findDOMNode(component);
@@ -117,37 +129,38 @@ const checkNormalVisible = function checkNormalVisible(component) {
  * 检测元素在窗口中是否可见，如果是，则将 `visible` 状态设置为true。
  * 如果 `once` 为 true, 在 checkVisible 后移除监听
  *
- * @param  {React} component   React 响应滚动和调整大小的组件
+ * @param  {LazyLoad} component   React 响应滚动和调整大小的组件
  */
 const checkVisible = function checkVisible(component) {
-  const node = ReactDom.findDOMNode(component);
+  const currentComponent = component;
+  const node = ReactDom.findDOMNode(currentComponent);
   if (!node) {
     return;
   }
 
   const parent = scrollParent(node);
 
-  const isOverflow = component.props.overflow &&
+  const isOverflow = currentComponent.props.overflow &&
     parent !== node.ownerDocument &&
     parent !== document &&
     parent !== document.documentElement;
   const visible = isOverflow ?
-    checkOverflowVisible(component, parent) :
-    checkNormalVisible(component);
+    checkOverflowVisible(currentComponent, parent) :
+    checkNormalVisible(currentComponent);
   if (visible) {
     // 如果之前可见，不再渲染
-    if (!component.visible) {
-      if (component.props.once) {
-        pending.push(component);
+    if (!currentComponent.visible) {
+      if (currentComponent.props.once) {
+        pending.push(currentComponent);
       }
 
-      component.visible = true;
-      component.forceUpdate();
+      currentComponent.visible = true;
+      currentComponent.forceUpdate();
     }
-  } else if (!(component.props.once && component.visible)) {
-    component.visible = false;
-    if (component.props.unmountIfInvisible) {
-      component.forceUpdate();
+  } else if (!(currentComponent.props.once && currentComponent.visible)) {
+    currentComponent.visible = false;
+    if (currentComponent.props.unmountIfInvisible) {
+      currentComponent.forceUpdate();
     }
   }
 };
@@ -156,6 +169,7 @@ const checkVisible = function checkVisible(component) {
  * 默认懒加载处理事件
  */
 const lazyLoadHandler = () => {
+  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < listeners.length; ++i) {
     const listener = listeners[i];
     checkVisible(listener);
@@ -278,7 +292,7 @@ class LazyLoad extends Component {
     } else if (this.props.placeholder) {
       return this.props.placeholder;
     }
-    return <div style={{ height: this.props.height }} className="lazyload-placeholder"/>;
+    return <div style={{ height: this.props.height }} className="lazyload-placeholder" />;
   }
 }
 
@@ -303,7 +317,11 @@ LazyLoad.defaultProps = {
   overflow: false,
   resize: false,
   scroll: true,
+  throttle: 300,
+  debounce: 300,
+  placeholder: null,
   unmountIfInvisible: false,
+  children: PropTypes.element,
 };
 
 export default LazyLoad;

@@ -1,23 +1,31 @@
-/*eslint-disable */
-export default function throttle(fn, threshhold, scope) {
-  threshhold || (threshhold = 250);
-  var last,
-    deferTimer;
-  return function () {
-    var context = scope || this;
+/**
+ * 函数节流
+ * @param fn 要执行的函数
+ * @param threshold 执行间隔，单位毫秒（ms）
+ * @param scope 调用函数上下文
+ * @returns {Function}
+ */
+export default function throttle(fn, threshold, scope) {
+  let last;
+  let deferTimer;
 
-    var now = +new Date,
-      args = arguments;
-    if (last && now < last + threshhold) {
+  function throttled(...arg) {
+    const context = scope || this;
+
+    const now = +new Date();
+    const args = arg;
+    if (last && now < last + threshold) {
       // hold on to it
       clearTimeout(deferTimer);
-      deferTimer = setTimeout(function () {
+      deferTimer = setTimeout(() => {
         last = now;
         fn.apply(context, args);
-      }, threshhold);
+      }, threshold);
     } else {
       last = now;
       fn.apply(context, args);
     }
-  };
+  }
+
+  return throttled;
 }

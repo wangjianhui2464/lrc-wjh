@@ -1,3 +1,10 @@
+/**
+ * 函数防抖
+ * @param func 实际执行的函数
+ * @param wait 延迟时长， 单位毫秒（ms）
+ * @param immediate 是否立即执行
+ * @returns {function} debounced 返回一个函数
+ */
 export default function debounce(func, wait, immediate) {
   let timeout;
   let args;
@@ -22,9 +29,9 @@ export default function debounce(func, wait, immediate) {
     }
   };
 
-  return function debounced() {
+  function debounced(...arg) {
     context = this;
-    args = arguments;
+    args = arg;
     timestamp = +(new Date());
 
     const callNow = immediate && !timeout;
@@ -39,5 +46,7 @@ export default function debounce(func, wait, immediate) {
     }
 
     return result;
-  };
+  }
+
+  return debounced;
 }

@@ -138,7 +138,6 @@ export default class lazyloadExample extends React.Component {
           {this.state.arr.map((el, index) => (
             <LazyLoad
               overflow
-              style={{ position: 'absolute' }}
               once={false}
               key={index}
               height={200}
