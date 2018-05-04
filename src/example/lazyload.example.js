@@ -90,6 +90,11 @@ class Widget extends React.Component {
   }
 }
 
+/**
+ * 未加载组件占位符 组件
+ * @returns {*}
+ * @constructor
+ */
 function PlaceholderComponent() {
   return (
     <div className="placeholder">
